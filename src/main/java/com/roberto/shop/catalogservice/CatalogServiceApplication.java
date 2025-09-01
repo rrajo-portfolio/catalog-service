@@ -1,4 +1,4 @@
-package com.roberto.shop.catalog_service;
+package com.roberto.shop.catalogservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

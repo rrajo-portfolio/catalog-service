@@ -1,4 +1,4 @@
-package com.roberto.shop.catalog_service;
+package com.roberto.shop.catalogservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
