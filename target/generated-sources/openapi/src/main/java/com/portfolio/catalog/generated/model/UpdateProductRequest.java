@@ -22,7 +22,7 @@ import jakarta.annotation.Generated;
  * UpdateProductRequest
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-06T08:24:45.086812400+01:00[Europe/Madrid]", comments = "Generator version: 7.5.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-07T00:40:57.666886300+01:00[Europe/Madrid]", comments = "Generator version: 7.5.0")
 public class UpdateProductRequest {
 
   private String name;

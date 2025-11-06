@@ -1,3 +1,7 @@
-com\portfolio\catalog\service\ProductServiceTest.class
 com\portfolio\catalog\CatalogServiceApplicationTests.class
 com\portfolio\catalog\repository\ProductRepositoryTest.class
+com\portfolio\catalog\service\ProductServiceTest.class
+com\portfolio\catalog\events\ProductEventPublisherTest.class
+com\portfolio\catalog\events\ProductEventListenerTest.class
+com\portfolio\catalog\events\ProductEventMetricsTest.class
+com\portfolio\catalog\config\SearchTestConfig.class
