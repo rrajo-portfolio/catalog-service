@@ -31,3 +31,7 @@ spring:
 security:
   oauth2:
     expected-issuer: http://localhost:9999/mock
+
+notifications:
+  catalog:
+    to: test@portfolio.local
