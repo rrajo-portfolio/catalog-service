@@ -1,4 +1,10 @@
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaStreamsAutoConfiguration
   datasource:
     url: jdbc:h2:mem:catalog-testdb;MODE=MYSQL;DB_CLOSE_DELAY=-1
     username: sa
