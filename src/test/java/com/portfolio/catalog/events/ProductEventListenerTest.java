@@ -20,6 +20,9 @@ class ProductEventListenerTest {
     @Mock
     private ProductSearchRepository searchRepository;
 
+    @Mock
+    private ProductEventMetrics metrics;
+
     @InjectMocks
     private ProductEventListener listener;
 
@@ -42,6 +45,7 @@ class ProductEventListenerTest {
         listener.handle(event);
 
         verify(searchRepository).save(document);
+        verify(metrics).increment(ProductEventType.UPSERT);
     }
 
     @Test
@@ -53,5 +57,6 @@ class ProductEventListenerTest {
         listener.handle(event);
 
         verify(searchRepository).deleteById(id);
+        verify(metrics).increment(ProductEventType.DELETE);
     }
 }

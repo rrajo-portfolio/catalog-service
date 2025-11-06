@@ -15,12 +15,14 @@ public class ProductEventListener {
     private static final Logger log = LoggerFactory.getLogger(ProductEventListener.class);
 
     private final ProductSearchRepository searchRepository;
+    private final ProductEventMetrics metrics;
 
     @KafkaListener(topics = "${catalog.events.product-topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void handle(ProductEvent event) {
         if (event.type() == ProductEventType.DELETE) {
             searchRepository.deleteById(event.id());
             log.debug("Removed product {} from Elasticsearch index", event.id());
+            metrics.increment(event.type());
             return;
         }
         ProductDocument payload = event.payload();
@@ -29,6 +31,7 @@ public class ProductEventListener {
             return;
         }
         searchRepository.save(payload);
+        metrics.increment(event.type());
         log.debug("Indexed product {} in Elasticsearch", payload.getId());
     }
 }
