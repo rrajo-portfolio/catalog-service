@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,6 @@ class ProductRepositoryTest {
 
     private ProductEntity.ProductEntityBuilder baseProduct(String sku) {
         return ProductEntity.builder()
-            .id(UUID.randomUUID())
             .name("Sample %s".formatted(sku))
             .description("Test product %s".formatted(sku))
             .sku(sku)
