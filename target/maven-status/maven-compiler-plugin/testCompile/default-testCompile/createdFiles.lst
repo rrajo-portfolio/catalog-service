@@ -1,0 +1,3 @@
+com\portfolio\catalog\service\ProductServiceTest.class
+com\portfolio\catalog\CatalogServiceApplicationTests.class
+com\portfolio\catalog\repository\ProductRepositoryTest.class

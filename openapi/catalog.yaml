@@ -1,0 +1,319 @@
+openapi: 3.0.3
+info:
+  title: Catalog Service API
+  description: >
+    Portfolio catalog service that manages products exposed to recruiters.
+    All endpoints require a valid JWT issued by the central Keycloak server.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081/api
+    description: Local development
+tags:
+  - name: Products
+    description: Product catalog management
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List products
+      description: Returns a paginated list of products ordered by last update.
+      operationId: listProducts
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number (0-indexed).
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Page size.
+        - in: query
+          name: sort
+          schema:
+            type: string
+          description: Sort criteria, e.g. `name,asc`.
+      responses:
+        "200":
+          description: Page of products.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPage"
+    post:
+      tags:
+        - Products
+      summary: Create product
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: Product created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "409":
+          description: Product with same SKU already exists.
+  /products/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ProductIdPathParam"
+    get:
+      tags:
+        - Products
+      summary: Get product by id
+      operationId: getProduct
+      responses:
+        "200":
+          description: Product found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product missing.
+    put:
+      tags:
+        - Products
+      summary: Update product by id
+      operationId: updateProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+      responses:
+        "200":
+          description: Product updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product missing.
+    delete:
+      tags:
+        - Products
+      summary: Delete product
+      operationId: deleteProduct
+      responses:
+        "204":
+          description: Product deleted successfully.
+  /products/{id}/availability:
+    parameters:
+      - $ref: "#/components/parameters/ProductIdPathParam"
+    patch:
+      tags:
+        - Products
+      summary: Toggle product availability
+      operationId: patchAvailability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductAvailabilityRequest"
+      responses:
+        "200":
+          description: Product availability updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product missing.
+  /products/search:
+    get:
+      tags:
+        - Products
+      summary: Search products by text
+      operationId: searchProducts
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query applied over name and description.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+          description: Max number of results.
+      responses:
+        "200":
+          description: Matching search results.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductSummary"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    ProductIdPathParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Unique product identifier.
+  schemas:
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - sku
+        - price
+        - status
+        - lastUpdatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        sku:
+          type: string
+          pattern: "^[A-Z0-9_-]{6,32}$"
+        price:
+          type: number
+          format: double
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: EUR
+        stockQuantity:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+        tags:
+          type: array
+          items:
+            type: string
+        lastUpdatedAt:
+          type: string
+          format: date-time
+    ProductSummary:
+      type: object
+      required:
+        - id
+        - name
+        - sku
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        sku:
+          type: string
+        status:
+          type: string
+    CreateProductRequest:
+      type: object
+      required:
+        - name
+        - sku
+        - price
+        - currency
+        - stockQuantity
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 140
+        description:
+          type: string
+          maxLength: 500
+        sku:
+          type: string
+          pattern: "^[A-Z0-9_-]{6,32}$"
+        price:
+          type: number
+          format: double
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        stockQuantity:
+          type: integer
+          minimum: 0
+        tags:
+          type: array
+          items:
+            type: string
+    UpdateProductRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateProductRequest"
+        - type: object
+          properties:
+            status:
+              type: string
+              enum:
+                - ACTIVE
+                - INACTIVE
+    ProductPage:
+      type: object
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+    ProductAvailabilityRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+security:
+  - bearerAuth: []
