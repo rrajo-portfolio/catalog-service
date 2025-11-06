@@ -1,9 +1,11 @@
 package com.portfolio.catalog.config;
 
+import com.portfolio.catalog.events.ProductEvent;
 import com.portfolio.catalog.search.ProductSearchRepository;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 
 @TestConfiguration
@@ -17,5 +19,10 @@ public class SearchTestConfig {
     @Bean
     public JavaMailSender javaMailSender() {
         return Mockito.mock(JavaMailSender.class);
+    }
+
+    @Bean
+    public KafkaTemplate<String, ProductEvent> kafkaTemplate() {
+        return Mockito.mock(KafkaTemplate.class);
     }
 }

@@ -32,6 +32,10 @@ security:
   oauth2:
     expected-issuer: http://localhost:9999/mock
 
+catalog:
+  events:
+    product-topic: catalog-test-topic
+
 notifications:
   catalog:
     to: test@portfolio.local
