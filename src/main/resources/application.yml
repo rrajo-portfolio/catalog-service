@@ -30,6 +30,23 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:7080/auth/realms/portfolio/protocol/openid-connect/certs
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
+    consumer:
+      group-id: catalog-search-indexer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.portfolio.catalog.*
+        spring.json.value.default.type: com.portfolio.catalog.events.ProductEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    listener:
+      ack-mode: record
 
 notifications:
   catalog:
@@ -38,6 +55,10 @@ notifications:
 services:
   users:
     base-url: http://users-service:8082/api
+
+catalog:
+  events:
+    product-topic: ${CATALOG_EVENTS_TOPIC:catalog-product-events}
 
 management:
   endpoints:

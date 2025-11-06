@@ -10,6 +10,7 @@ import com.portfolio.catalog.generated.model.ProductAvailabilityRequest;
 import com.portfolio.catalog.generated.model.ProductPage;
 import com.portfolio.catalog.generated.model.ProductSummary;
 import com.portfolio.catalog.generated.model.UpdateProductRequest;
+import com.portfolio.catalog.events.ProductEventPublisher;
 import com.portfolio.catalog.repository.ProductRepository;
 import com.portfolio.catalog.search.ProductDocument;
 import com.portfolio.catalog.search.ProductSearchRepository;
@@ -37,6 +38,7 @@ public class ProductService {
     private final ProductSearchRepository searchRepository;
     private final ProductMapper mapper;
     private final CatalogMailService mailService;
+    private final ProductEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public ProductPage listProducts(Integer page, Integer size, Sort sort) {
@@ -60,7 +62,7 @@ public class ProductService {
 
         ProductEntity entity = mapper.toEntity(request);
         ProductEntity saved = repository.save(entity);
-        searchRepository.save(toDocument(saved));
+        eventPublisher.publishUpsert(saved);
         mailService.sendNewProductNotification(saved.getName(), saved.getSku());
         return mapper.toProduct(saved);
     }
@@ -78,7 +80,7 @@ public class ProductService {
             .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
         mapper.updateEntity(request, entity);
         ProductEntity saved = repository.save(entity);
-        searchRepository.save(toDocument(saved));
+        eventPublisher.publishUpsert(saved);
         return mapper.toProduct(saved);
     }
 
@@ -87,7 +89,7 @@ public class ProductService {
         ProductEntity entity = repository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
         repository.delete(entity);
-        searchRepository.deleteById(entity.getId());
+        eventPublisher.publishDelete(entity.getId());
     }
 
     @Transactional
@@ -96,7 +98,7 @@ public class ProductService {
             .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
         entity.setStatus(ProductStatus.valueOf(request.getStatus().getValue()));
         ProductEntity saved = repository.save(entity);
-        searchRepository.save(toDocument(saved));
+        eventPublisher.publishUpsert(saved);
         return mapper.toProduct(saved);
     }
 
@@ -137,17 +139,4 @@ public class ProductService {
         }
     }
 
-    private ProductDocument toDocument(ProductEntity entity) {
-        return ProductDocument.builder()
-            .id(entity.getId())
-            .name(entity.getName())
-            .description(entity.getDescription())
-            .sku(entity.getSku())
-            .price(entity.getPrice())
-            .currency(entity.getCurrency())
-            .status(entity.getStatus().name())
-            .stockQuantity(entity.getStockQuantity())
-            .tags(entity.getTags())
-            .build();
-    }
 }

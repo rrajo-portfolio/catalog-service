@@ -4,6 +4,7 @@ import com.portfolio.catalog.entity.ProductEntity;
 import com.portfolio.catalog.entity.ProductStatus;
 import com.portfolio.catalog.exception.ConflictException;
 import com.portfolio.catalog.exception.ResourceNotFoundException;
+import com.portfolio.catalog.events.ProductEventPublisher;
 import com.portfolio.catalog.generated.model.CreateProductRequest;
 import com.portfolio.catalog.generated.model.Product;
 import com.portfolio.catalog.generated.model.ProductAvailabilityRequest;
@@ -53,6 +54,9 @@ class ProductServiceTest {
     @Mock
     private CatalogMailService catalogMailService;
 
+    @Mock
+    private ProductEventPublisher productEventPublisher;
+
     @InjectMocks
     private ProductService productService;
 
@@ -94,7 +98,7 @@ class ProductServiceTest {
 
         assertThat(result).isSameAs(productDto);
         verify(productRepository).save(entity);
-        verify(productSearchRepository).save(any(ProductDocument.class));
+        verify(productEventPublisher).publishUpsert(entity);
         verify(catalogMailService).sendNewProductNotification(entity.getName(), entity.getSku());
     }
 
@@ -125,7 +129,7 @@ class ProductServiceTest {
 
         assertThat(entity.getStatus()).isEqualTo(ProductStatus.INACTIVE);
         assertThat(result).isSameAs(expected);
-        verify(productSearchRepository).save(any(ProductDocument.class));
+        verify(productEventPublisher).publishUpsert(entity);
     }
 
     @Test
@@ -180,7 +184,7 @@ class ProductServiceTest {
         productService.deleteProduct(entity.getId());
 
         verify(productRepository).delete(entity);
-        verify(productSearchRepository).deleteById(entity.getId());
+        verify(productEventPublisher).publishDelete(entity.getId());
     }
 
     @Test
