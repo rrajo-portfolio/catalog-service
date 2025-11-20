@@ -22,6 +22,7 @@ public interface ProductMapper {
     @Mapping(target = "id", expression = "java(UUID.randomUUID())")
     @Mapping(target = "status", expression = "java(ProductStatus.ACTIVE)")
     @Mapping(target = "lastUpdatedAt", expression = "java(OffsetDateTime.now())")
+    @Mapping(target = "version", constant = "0L")
     ProductEntity toEntity(CreateProductRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
