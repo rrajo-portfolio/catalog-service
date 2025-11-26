@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-11-07T00:40:59+0100",
+    date = "2025-11-25T10:46:39+0100",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
@@ -46,6 +46,7 @@ public class ProductMapperImpl implements ProductMapper {
         productEntity.id( UUID.randomUUID() );
         productEntity.status( ProductStatus.ACTIVE );
         productEntity.lastUpdatedAt( OffsetDateTime.now() );
+        productEntity.version( (long) 0L );
 
         return productEntity.build();
     }

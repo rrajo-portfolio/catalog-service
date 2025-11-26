@@ -78,6 +78,7 @@ public class ProductService {
     public Product updateProduct(UUID id, UpdateProductRequest request) {
         ProductEntity entity = repository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
+        validateSkuConflict(id, request.getSku());
         mapper.updateEntity(request, entity);
         ProductEntity saved = repository.save(entity);
         eventPublisher.publishUpsert(saved);
@@ -100,6 +101,17 @@ public class ProductService {
         ProductEntity saved = repository.save(entity);
         eventPublisher.publishUpsert(saved);
         return mapper.toProduct(saved);
+    }
+
+    private void validateSkuConflict(UUID id, String sku) {
+        if (sku == null || sku.isBlank()) {
+            return;
+        }
+        repository.findBySkuIgnoreCase(sku.trim())
+            .filter(existing -> !existing.getId().equals(id))
+            .ifPresent(existing -> {
+                throw new ConflictException("Product with SKU %s already exists".formatted(sku));
+            });
     }
 
     @Transactional(readOnly = true)

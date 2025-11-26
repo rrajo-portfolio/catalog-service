@@ -1,0 +1,48 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaStreamsAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:catalog-testdb;MODE=MYSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9999/mock
+      client:
+        registration:
+          test-client:
+            client-id: test-client
+            client-secret: test-secret
+            authorization-grant-type: client_credentials
+            scope:
+              - catalog_read
+        provider:
+          keycloak:
+            token-uri: http://localhost:9999/token
+            authorization-uri: http://localhost:9999/authorize
+            jwk-set-uri: http://localhost:9999/jwks
+
+security:
+  oauth2:
+    expected-issuer: http://localhost:9999/mock
+
+catalog:
+  events:
+    product-topic: catalog-test-topic
+
+notifications:
+  catalog:
+    to: test@portfolio.local
+services:
+  users:
+    base-url: http://localhost:8082/api
+  catalog:
+    base-url: http://localhost:8081/api
+  orders:
+    base-url: http://localhost:8084/api

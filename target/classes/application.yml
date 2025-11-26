@@ -7,9 +7,11 @@ spring:
   application:
     name: catalog-service
   datasource:
-    url: jdbc:mysql://localhost:3307/catalogdb
+    url: jdbc:mysql://localhost:3307/catalogdb?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
     username: catalog_user
     password: catalog_pass
+    hikari:
+      connection-init-sql: SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
   jpa:
     hibernate:
       ddl-auto: update
@@ -69,6 +71,9 @@ management:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 logging:
   level:

@@ -133,6 +133,44 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("updateProduct should persist changes, check sku uniqueness and publish event")
+    void updateProductPersistsChanges() {
+        UpdateProductRequest request = new UpdateProductRequest()
+            .name("Updated Product")
+            .sku("PORT-123");
+        ProductEntity saved = entity;
+        Product dto = new Product().id(entity.getId()).name("Updated Product");
+
+        when(productRepository.findById(entity.getId())).thenReturn(Optional.of(entity));
+        when(productRepository.findBySkuIgnoreCase("PORT-123")).thenReturn(Optional.empty());
+        when(productRepository.save(entity)).thenReturn(saved);
+        when(productMapper.toProduct(saved)).thenReturn(dto);
+
+        Product result = productService.updateProduct(entity.getId(), request);
+
+        assertThat(result).isSameAs(dto);
+        verify(productMapper).updateEntity(request, entity);
+        verify(productEventPublisher).publishUpsert(saved);
+    }
+
+    @Test
+    @DisplayName("updateProduct should throw ConflictException when sku belongs to another product")
+    void updateProductDuplicateSkuThrows() {
+        UpdateProductRequest request = new UpdateProductRequest().sku("PORT-555");
+        ProductEntity other = ProductEntity.builder().id(UUID.randomUUID()).sku("PORT-555").build();
+
+        when(productRepository.findById(entity.getId())).thenReturn(Optional.of(entity));
+        when(productRepository.findBySkuIgnoreCase("PORT-555")).thenReturn(Optional.of(other));
+
+        assertThatThrownBy(() -> productService.updateProduct(entity.getId(), request))
+            .isInstanceOf(ConflictException.class)
+            .hasMessageContaining("PORT-555");
+
+        verify(productRepository, never()).save(any());
+        verify(productEventPublisher, never()).publishUpsert(any());
+    }
+
+    @Test
     @DisplayName("search should return fallback results when Elasticsearch is empty")
     void searchFallsBackToRepositoryWhenIndexEmpty() {
         when(productSearchRepository
