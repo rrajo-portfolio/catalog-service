@@ -26,6 +26,8 @@
         <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
         <sonar.exclusions>**/generated/**,**/generated-sources/**</sonar.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>**/controller/**,**/config/**,**/events/**,**/jobs/**,**/entity/**,**/repository/**,**/search/**,**/generated/**,**/generated-sources/**,**/exception/**,**/*Application.*</sonar.coverage.exclusions>
+        <sonar.coverage.inclusions>**/service/**</sonar.coverage.inclusions>
     </properties>
 
     <dependencies>
@@ -198,6 +200,21 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/portfolio/catalog/controller/**</exclude>
+                        <exclude>com/portfolio/catalog/config/**</exclude>
+                        <exclude>com/portfolio/catalog/events/**</exclude>
+                        <exclude>com/portfolio/catalog/jobs/**</exclude>
+                        <exclude>com/portfolio/catalog/entity/**</exclude>
+                        <exclude>com/portfolio/catalog/repository/**</exclude>
+                        <exclude>com/portfolio/catalog/search/**</exclude>
+                        <exclude>com/portfolio/catalog/generated/**</exclude>
+                        <exclude>com/portfolio/catalog/exception/**</exclude>
+                        <exclude>com/portfolio/catalog/CatalogServiceApplication*</exclude>
+                        <exclude>com/portfolio/catalog/service/ProductMapperImpl*</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

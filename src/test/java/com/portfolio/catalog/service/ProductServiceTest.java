@@ -235,6 +235,27 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("getProduct should return DTO when entity exists")
+    void getProductReturnsDto() {
+        Product productDto = new Product().id(entity.getId()).name(entity.getName());
+        when(productRepository.findById(entity.getId())).thenReturn(Optional.of(entity));
+        when(productMapper.toProduct(entity)).thenReturn(productDto);
+
+        Product result = productService.getProduct(entity.getId());
+
+        assertThat(result).isSameAs(productDto);
+    }
+
+    @Test
+    @DisplayName("getProduct should throw when entity is missing")
+    void getProductNotFoundThrows() {
+        when(productRepository.findById(entity.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> productService.getProduct(entity.getId()))
+            .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
     @DisplayName("listProducts returns paginated result")
     void listProductsReturnsPage() {
         Product productDto = new Product().id(entity.getId());
@@ -244,5 +265,32 @@ class ProductServiceTest {
         ProductPage page = productService.listProducts(0, 5, Sort.unsorted());
 
         assertThat(page.getContent()).containsExactly(productDto);
+    }
+
+    @Test
+    @DisplayName("resolveSort should use default when input is empty")
+    void resolveSortReturnsDefaultWhenBlank() {
+        Sort sort = productService.resolveSort(" ");
+
+        assertThat(sort.getOrderFor("lastUpdatedAt")).isNotNull();
+        assertThat(sort.getOrderFor("lastUpdatedAt").getDirection()).isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
+    @DisplayName("resolveSort should parse provided property and direction")
+    void resolveSortParsesInput() {
+        Sort sort = productService.resolveSort("price,asc");
+
+        assertThat(sort.getOrderFor("price")).isNotNull();
+        assertThat(sort.getOrderFor("price").getDirection()).isEqualTo(Sort.Direction.ASC);
+    }
+
+    @Test
+    @DisplayName("resolveSort should fallback to default when parsing fails")
+    void resolveSortHandlesInvalidInput() {
+        Sort sort = productService.resolveSort("name,invalid");
+
+        assertThat(sort.getOrderFor("lastUpdatedAt")).isNotNull();
+        assertThat(sort.getOrderFor("lastUpdatedAt").getDirection()).isEqualTo(Sort.Direction.DESC);
     }
 }
