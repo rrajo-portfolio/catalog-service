@@ -1,4 +1,4 @@
-﻿package com.portfolio.catalog.config;
+package com.portfolio.catalog.config;
 
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import lombok.extern.slf4j.Slf4j;
