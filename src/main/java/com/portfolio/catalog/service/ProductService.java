@@ -33,6 +33,7 @@ import java.util.UUID;
 public class ProductService {
 
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
+    private static final String PRODUCT_NOT_FOUND_TEMPLATE = "Product %s not found";
 
     private final ProductRepository repository;
     private final ProductSearchRepository searchRepository;
@@ -70,14 +71,14 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Product getProduct(UUID id) {
         ProductEntity entity = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
+            .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND_TEMPLATE.formatted(id)));
         return mapper.toProduct(entity);
     }
 
     @Transactional
     public Product updateProduct(UUID id, UpdateProductRequest request) {
         ProductEntity entity = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
+            .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND_TEMPLATE.formatted(id)));
         validateSkuConflict(id, request.getSku());
         mapper.updateEntity(request, entity);
         ProductEntity saved = repository.save(entity);
@@ -88,7 +89,7 @@ public class ProductService {
     @Transactional
     public void deleteProduct(UUID id) {
         ProductEntity entity = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
+            .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND_TEMPLATE.formatted(id)));
         repository.delete(entity);
         eventPublisher.publishDelete(entity.getId());
     }
@@ -96,7 +97,7 @@ public class ProductService {
     @Transactional
     public Product updateAvailability(UUID id, ProductAvailabilityRequest request) {
         ProductEntity entity = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product %s not found".formatted(id)));
+            .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND_TEMPLATE.formatted(id)));
         entity.setStatus(ProductStatus.valueOf(request.getStatus().getValue()));
         ProductEntity saved = repository.save(entity);
         eventPublisher.publishUpsert(saved);

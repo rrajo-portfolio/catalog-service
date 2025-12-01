@@ -32,7 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -108,9 +108,11 @@ class ProductServiceTest {
         CreateProductRequest request = new CreateProductRequest().sku("PORT-999");
         when(productRepository.findBySkuIgnoreCase("PORT-999")).thenReturn(Optional.of(entity));
 
-        assertThatThrownBy(() -> productService.createProduct(request))
-            .isInstanceOf(ConflictException.class)
-            .hasMessageContaining("already exists");
+        ConflictException exception = assertThrows(
+            ConflictException.class,
+            () -> productService.createProduct(request)
+        );
+        assertThat(exception).hasMessageContaining("already exists");
 
         verify(productRepository, never()).save(any());
     }
@@ -156,15 +158,18 @@ class ProductServiceTest {
     @Test
     @DisplayName("updateProduct should throw ConflictException when sku belongs to another product")
     void updateProductDuplicateSkuThrows() {
+        UUID productId = entity.getId();
         UpdateProductRequest request = new UpdateProductRequest().sku("PORT-555");
         ProductEntity other = ProductEntity.builder().id(UUID.randomUUID()).sku("PORT-555").build();
 
-        when(productRepository.findById(entity.getId())).thenReturn(Optional.of(entity));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(entity));
         when(productRepository.findBySkuIgnoreCase("PORT-555")).thenReturn(Optional.of(other));
 
-        assertThatThrownBy(() -> productService.updateProduct(entity.getId(), request))
-            .isInstanceOf(ConflictException.class)
-            .hasMessageContaining("PORT-555");
+        ConflictException exception = assertThrows(
+            ConflictException.class,
+            () -> productService.updateProduct(productId, request)
+        );
+        assertThat(exception).hasMessageContaining("PORT-555");
 
         verify(productRepository, never()).save(any());
         verify(productEventPublisher, never()).publishUpsert(any());
@@ -228,10 +233,10 @@ class ProductServiceTest {
     @Test
     @DisplayName("deleteProduct should throw when entity is missing")
     void deleteProductNotFoundThrows() {
-        when(productRepository.findById(entity.getId())).thenReturn(Optional.empty());
+        UUID productId = entity.getId();
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> productService.deleteProduct(entity.getId()))
-            .isInstanceOf(ResourceNotFoundException.class);
+        assertThrows(ResourceNotFoundException.class, () -> productService.deleteProduct(productId));
     }
 
     @Test
@@ -249,10 +254,10 @@ class ProductServiceTest {
     @Test
     @DisplayName("getProduct should throw when entity is missing")
     void getProductNotFoundThrows() {
-        when(productRepository.findById(entity.getId())).thenReturn(Optional.empty());
+        UUID productId = entity.getId();
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> productService.getProduct(entity.getId()))
-            .isInstanceOf(ResourceNotFoundException.class);
+        assertThrows(ResourceNotFoundException.class, () -> productService.getProduct(productId));
     }
 
     @Test
